@@ -8,9 +8,9 @@
 // Output functions
 void printSummaryTable(zigbee_scan_result_t *scan_result, uint16_t networksFound) {
     Serial.println("\n=== NETWORK SCAN SUMMARY ===");
-    Serial.println("+------------------+----+--------+------+---------+--------+------+----------+---------+");
-    Serial.println("| PAN ID (dec/hex) | CH | Signal | Join | Routers | EndDev | Load | Security | Status  |");
-    Serial.println("+------------------+----+--------+------+---------+--------+------+----------+---------+");
+    Serial.println("+------------------+----+------+---------+--------+------+----------+---------+");
+    Serial.println("| PAN ID (dec/hex) | CH | Join | Routers | EndDev | Load | Security | Status  |");
+    Serial.println("+------------------+----+------+---------+--------+------+----------+---------+");
 
     for (int i = 0; i < networksFound; ++i) {
         uint8_t* raw = (uint8_t*)&scan_result[i];
@@ -42,10 +42,9 @@ void printSummaryTable(zigbee_scan_result_t *scan_result, uint16_t networksFound
             scan_result[i].short_pan_id, 
             scan_result[i].short_pan_id);
 
-        Serial.printf("| %-16s | %2d | %s | %-4s | %-7s | %-6s | %3d%% | %-8s | %-7s |\n",
+        Serial.printf("| %-16s | %2d | %-4s | %-7s | %-6s | %3d%% | %-8s | %-7s |\n",
             panIdStr,
             scan_result[i].logic_channel,
-            getSignalLevel(signalStrength).c_str(),
             scan_result[i].permit_joining ? "Yes" : "No",
             scan_result[i].router_capacity ? "Yes" : "No",
             scan_result[i].end_device_capacity ? "Yes" : "No",
@@ -55,7 +54,7 @@ void printSummaryTable(zigbee_scan_result_t *scan_result, uint16_t networksFound
         );
     }
     
-    Serial.println("+------------------+----+--------+------+---------+--------+------+----------+---------+");
+    Serial.println("+------------------+----+------+---------+--------+------+----------+---------+");
 }
 
 void printNetworkDiagnostics(zigbee_scan_result_t *scan_result, uint16_t networksFound) {
@@ -80,11 +79,6 @@ void printNetworkDiagnostics(zigbee_scan_result_t *scan_result, uint16_t network
         
         Serial.printf("├─ Type: %s\n", networkStats[i].isCoordinator ? "Coordinator" : "Router/End Device");
         Serial.printf("├─ Uptime: %d sec\n", networkStats[i].uptime);
-        Serial.printf("├─ Current Signal: %d [%s] %s\n", 
-            signalStrength,
-            getSignalLevel(signalStrength).c_str(),
-            getLoadLevel(networkLoad).c_str()
-        );
 
         if(networkStats[i].totalPackets > 0) {
             float packetLoss = (float)networkStats[i].failedPackets / networkStats[i].totalPackets * 100;
@@ -96,20 +90,6 @@ void printNetworkDiagnostics(zigbee_scan_result_t *scan_result, uint16_t network
             else Serial.println(" (OK)");
             
             Serial.printf("├─ Retry Rate: %.1f%%\n", retryRate);
-            
-            Serial.printf("├─ Signal Range: %d-%d (avg: %d)\n", 
-                networkStats[i].minSignalStrength,
-                networkStats[i].maxSignalStrength,
-                networkStats[i].avgSignalStrength
-            );
-            
-            // Signal history output
-            Serial.print("├─ Signal History [");
-            for (int j = 0; j < networkStats[i].signalHistoryCount; j++) {
-                Serial.printf("%d", networkStats[i].signalHistory[j]);
-                if (j < networkStats[i].signalHistoryCount - 1) Serial.print(", ");
-            }
-            Serial.println("]");
         }
 
         // Problem analysis
