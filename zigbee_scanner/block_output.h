@@ -8,9 +8,9 @@
 // Output functions
 void printSummaryTable(zigbee_scan_result_t *scan_result, uint16_t networksFound) {
     Serial.println("\n=== NETWORK SCAN SUMMARY ===");
-    Serial.println("+------------------+----+------+---------+--------+------+----------+---------+");
-    Serial.println("| PAN ID (dec/hex) | CH | Join | Routers | EndDev | Load | Security | Status  |");
-    Serial.println("+------------------+----+------+---------+--------+------+----------+---------+");
+    Serial.println("+------------------+----+------+---------+--------+----------+---------+");
+    Serial.println("| PAN ID (dec/hex) | CH | Join | Routers | EndDev | Security | Status  |");
+    Serial.println("+------------------+----+------+---------+--------+----------+---------+");
 
     for (int i = 0; i < networksFound; ++i) {
         uint8_t* raw = (uint8_t*)&scan_result[i];
@@ -21,7 +21,6 @@ void printSummaryTable(zigbee_scan_result_t *scan_result, uint16_t networksFound
 
         uint16_t rawSignal = (raw[0] << 8) | raw[1];
         uint8_t signalStrength = (rawSignal >> 8) & 0xFF;
-        uint8_t networkLoad = (raw[4] * 100) / 255;
 
         String status = "New";
         for(int j = 0; j < previousNetworksCount; j++) {
@@ -42,19 +41,18 @@ void printSummaryTable(zigbee_scan_result_t *scan_result, uint16_t networksFound
             scan_result[i].short_pan_id, 
             scan_result[i].short_pan_id);
 
-        Serial.printf("| %-16s | %2d | %-4s | %-7s | %-6s | %3d%% | %-8s | %-7s |\n",
+        Serial.printf("| %-16s | %2d | %-4s | %-7s | %-6s | %-8s | %-7s |\n",
             panIdStr,
             scan_result[i].logic_channel,
             scan_result[i].permit_joining ? "Yes" : "No",
             scan_result[i].router_capacity ? "Yes" : "No",
             scan_result[i].end_device_capacity ? "Yes" : "No",
-            networkLoad,
             (raw[5] & 0x7F) ? "Secured" : "Open",
             status.c_str()
         );
     }
     
-    Serial.println("+------------------+----+------+---------+--------+------+----------+---------+");
+    Serial.println("+------------------+----+------+---------+--------+----------+---------+");
 }
 
 void printNetworkDiagnostics(zigbee_scan_result_t *scan_result, uint16_t networksFound) {
